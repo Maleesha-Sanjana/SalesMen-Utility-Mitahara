@@ -176,6 +176,30 @@ class _RepDocumentHistoryPageState extends State<RepDocumentHistoryPage> {
     }
   }
 
+  Future<void> _printReceipt(Map<String, dynamic> entry) async {
+    final documentNo = entry['documentNo']?.toString() ?? '';
+    if (documentNo.isEmpty) return;
+
+    setState(() => _busyDocumentNo = documentNo);
+    try {
+      await RepDocumentRecallService.printReceiptFromHistoryEntry(
+        context: context,
+        documentType: widget.documentType,
+        entry: entry,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busyDocumentNo = null);
+    }
+  }
+
   void _showDocumentActions(Map<String, dynamic> entry) {
     final isPending =
         entry['isPendingSync'] == true || entry['isOffline'] == true;
@@ -221,14 +245,26 @@ class _RepDocumentHistoryPageState extends State<RepDocumentHistoryPage> {
                       _previewPdf(entry);
                     },
                     icon: const Icon(Icons.picture_as_pdf_rounded),
-                    label: const Text('View & Share PDF'),
+                    label: const Text('View & Share A4 PDF'),
                     style: FilledButton.styleFrom(
                       backgroundColor: widget.accentColor,
                     ),
                   ),
                   const SizedBox(height: 8),
+                  FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(sheetContext).pop();
+                      _printReceipt(entry);
+                    },
+                    icon: const Icon(Icons.print_rounded),
+                    label: const Text('Print Receipt (Thermal)'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.teal.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Text(
-                    'Recalls this document from the database and opens a PDF preview. Use the share button in the preview to send it.',
+                    'Recalls this document from the database to either view a PDF or print a thermal receipt directly.',
                     style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
                       color: Colors.black54,
                     ),
