@@ -43,6 +43,13 @@ class ReceiptPdfGenerator {
       marginAll: 2 * PdfPageFormat.mm,
     );
 
+    final timeFormat = DateFormat('hh:mm a');
+
+    // Customer details
+    final customerName = customer['name']?.toString() ?? '';
+    final customerPhone = customer['phone']?.toString() ?? customer['mobile']?.toString() ?? '';
+    final customerAddress = customer['address']?.toString() ?? customer['address1']?.toString() ?? '';
+
     pdf.addPage(
       pw.Page(
         pageFormat: format,
@@ -50,81 +57,117 @@ class ReceiptPdfGenerator {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // Header
+              // 1. Logo
+              if (logoImage != null)
+                pw.Center(
+                  child: pw.Container(
+                    height: 40,
+                    child: pw.Image(logoImage),
+                  ),
+                ),
+              pw.SizedBox(height: 5),
+
+              // 2. Company Details (Centered)
               pw.Center(
                 child: pw.Column(
                   children: [
-                    if (logoImage != null)
-                      pw.Container(
-                        height: 40,
-                        child: pw.Image(logoImage),
-                      ),
-                    pw.SizedBox(height: 5),
                     pw.Text(
                       CompanyInfo.name,
                       style: pw.TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: pw.FontWeight.bold,
                       ),
-                      textAlign: pw.TextAlign.center,
                     ),
-                    pw.Text(CompanyInfo.addressLine1, style: const pw.TextStyle(fontSize: 10)),
-                    pw.Text(CompanyInfo.addressLine2, style: const pw.TextStyle(fontSize: 10)),
-                    pw.Text('Tel: ${CompanyInfo.phone}', style: const pw.TextStyle(fontSize: 10)),
-                    pw.SizedBox(height: 5),
-                    pw.Text(
-                      docType.toUpperCase(),
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                        fontWeight: pw.FontWeight.bold,
-                        decoration: pw.TextDecoration.underline,
-                      ),
-                    ),
+                    if (CompanyInfo.addressLine1.isNotEmpty)
+                      pw.Text(CompanyInfo.addressLine1, style: const pw.TextStyle(fontSize: 10)),
+                    if (CompanyInfo.addressLine2.isNotEmpty)
+                      pw.Text(CompanyInfo.addressLine2, style: const pw.TextStyle(fontSize: 10)),
+                    if (CompanyInfo.registrationNumber.isNotEmpty)
+                      pw.Text(CompanyInfo.registrationNumber, style: const pw.TextStyle(fontSize: 10)),
+                    pw.Text('Ph.No.: ${CompanyInfo.phone}', style: const pw.TextStyle(fontSize: 10)),
+                    if (CompanyInfo.email.isNotEmpty)
+                      pw.Text('Email: ${CompanyInfo.email}', style: const pw.TextStyle(fontSize: 10)),
                   ],
                 ),
               ),
-              pw.SizedBox(height: 10),
-              
-              // Document Info
+              pw.SizedBox(height: 5),
+              pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
+              pw.SizedBox(height: 5),
+
+              // 3. Document Type (Invoice)
+              pw.Center(
+                child: pw.Text(
+                  docType.toUpperCase(),
+                  style: pw.TextStyle(
+                    fontSize: 12,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 5),
+
+              // 4. Customer & Invoice Info
               pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text('Doc No: $documentNo', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-                  pw.Text('Date: ${_date.format(documentDate)}', style: const pw.TextStyle(fontSize: 10)),
+                  // Left side
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        if (customerName.isNotEmpty)
+                          pw.Text(customerName, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                        if (customerPhone.isNotEmpty)
+                          pw.Text('Ph.No.: $customerPhone', style: const pw.TextStyle(fontSize: 10)),
+                        pw.SizedBox(height: 2),
+                        pw.Text('Bill To:', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                        if (customerName.isNotEmpty)
+                          pw.Text(customerName, style: const pw.TextStyle(fontSize: 10)),
+                        if (customerAddress.isNotEmpty)
+                          pw.Text(customerAddress, style: const pw.TextStyle(fontSize: 10)),
+                      ],
+                    ),
+                  ),
+                  // Right side
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        pw.Text('Date: ${_date.format(documentDate)}', style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text('Time: ${timeFormat.format(documentDate)}', style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text('Invoice No: $documentNo', style: const pw.TextStyle(fontSize: 10)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              pw.SizedBox(height: 2),
-              pw.Text('Customer: ${customer['name'] ?? ''}', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-              pw.Text('Code: ${customer['code'] ?? ''}', style: const pw.TextStyle(fontSize: 10)),
-              if (customer['address1'] != null && customer['address1'].toString().isNotEmpty)
-                pw.Text('Address: ${customer['address1']}', style: const pw.TextStyle(fontSize: 10)),
-              pw.SizedBox(height: 2),
-              pw.Text('Salesman: $salesmanName', style: const pw.TextStyle(fontSize: 10)),
-              if (poNumber != null && poNumber.isNotEmpty)
-                pw.Text('PO Number: $poNumber', style: const pw.TextStyle(fontSize: 10)),
               pw.SizedBox(height: 5),
               pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
 
-              // Items Header
+              // 5. Items Header
               pw.Row(
                 children: [
-                  pw.Expanded(flex: 3, child: pw.Text('Item', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 1, child: pw.Text('Qty', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                  pw.SizedBox(width: 15, child: pw.Text('#', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 4, child: pw.Text('Name', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 2, child: pw.Text('Qty', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
                   pw.Expanded(flex: 2, child: pw.Text('Price', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 2, child: pw.Text('Total', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 3, child: pw.Text('Amount', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
                 ],
               ),
               pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
               pw.SizedBox(height: 2),
 
-              // Items
-              ...rows.map((row) {
+              // 6. Items List
+              ...rows.asMap().entries.map((entry) {
+                final index = entry.key + 1;
+                final row = entry.value;
                 final qty = double.tryParse(row['qty']?.toString() ?? '0') ?? 0.0;
                 final price = double.tryParse(row['price']?.toString() ?? '0') ?? 0.0;
-                final itemName = row['productName'] ?? row['item_name'] ?? '';
-                final itemCode = row['productCode'] ?? row['item_code'] ?? '';
+                final itemName = row['productName'] ?? row['item_name'] ?? row['name'] ?? '';
+                final unit = row['unit'] ?? 'Pac'; // Fallback if no unit
                 
-                // Line discount logic
+                final lineTotal = (price * qty); // Using simple price*qty to match amount, subtract discount if needed
+                
                 final rawDisc = row['discount']?.toString() ?? '0';
                 final numDisc = double.tryParse(rawDisc.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
                 double lineDiscVal = 0.0;
@@ -135,19 +178,19 @@ class ReceiptPdfGenerator {
                     lineDiscVal = numDisc;
                   }
                 }
-                
-                final lineTotal = (price * qty) - lineDiscVal;
+                final finalAmount = lineTotal - lineDiscVal;
 
                 return pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text('$itemCode - $itemName', style: const pw.TextStyle(fontSize: 9)),
                     pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Expanded(flex: 3, child: pw.Container()), // indent
-                        pw.Expanded(flex: 1, child: pw.Text(qty.toStringAsFixed(0), textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 9))),
-                        pw.Expanded(flex: 2, child: pw.Text(_money.format(price), textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 9))),
-                        pw.Expanded(flex: 2, child: pw.Text(_money.format(lineTotal), textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 9))),
+                        pw.SizedBox(width: 15, child: pw.Text('$index', style: const pw.TextStyle(fontSize: 9))),
+                        pw.Expanded(flex: 4, child: pw.Text('$itemName', style: const pw.TextStyle(fontSize: 9))),
+                        pw.Expanded(flex: 2, child: pw.Text('${qty.toStringAsFixed(0)} $unit', textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 9))),
+                        pw.Expanded(flex: 2, child: pw.Text(price > 0 ? _money.format(price) : '', textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 9))),
+                        pw.Expanded(flex: 3, child: pw.Text(_money.format(finalAmount), textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 9))),
                       ],
                     ),
                     if (lineDiscVal > 0)
@@ -162,52 +205,54 @@ class ReceiptPdfGenerator {
               
               pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
               
-              // Totals
-              _buildTotalRow('Subtotal:', subtotal),
-              if (billDiscountAmount > 0)
-                _buildTotalRow('Discount:', billDiscountAmount),
-              if (taxAmount > 0)
-                _buildTotalRow('Tax:', taxAmount),
-              
-              pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
+              // 7. Totals
               pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('NET AMOUNT:', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
-                  pw.Text(_money.format(netAmount), style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                  pw.Expanded(flex: 4, child: pw.Text('Total', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 2, child: pw.Text('${rows.fold<double>(0, (sum, row) => sum + (double.tryParse(row['qty']?.toString() ?? '0') ?? 0)).toStringAsFixed(0)}', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 5, child: pw.Text(_money.format(netAmount), textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))),
                 ],
               ),
+              pw.SizedBox(height: 5),
+
+              // Breakdown
+              pw.Padding(
+                padding: const pw.EdgeInsets.only(left: 30),
+                child: pw.Column(
+                  children: [
+                    if (subtotal != netAmount)
+                      _buildTotalsBreakdownRow('Subtotal', subtotal),
+                    if (billDiscountAmount > 0)
+                      _buildTotalsBreakdownRow('Discount', -billDiscountAmount),
+                    if (taxAmount > 0)
+                      _buildTotalsBreakdownRow('Tax', taxAmount),
+                    _buildTotalsBreakdownRow('Total', netAmount),
+                    _buildTotalsBreakdownRow('Received', 0.00), // Placeholder for received amount if payments are tracked
+                    _buildTotalsBreakdownRow('Balance', netAmount),
+                  ],
+                ),
+              ),
+
               pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
 
-              // Payments if any
-              if (paymentModes != null && paymentModes.isNotEmpty) ...[
-                pw.SizedBox(height: 5),
-                pw.Text('Payments:', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-                ...paymentModes.map((p) {
-                  final m = p['mode'] ?? '';
-                  final a = double.tryParse(p['amount']?.toString() ?? '0') ?? 0.0;
-                  return pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text('  $m', style: const pw.TextStyle(fontSize: 9)),
-                      pw.Text(_money.format(a), style: const pw.TextStyle(fontSize: 9)),
-                    ],
-                  );
-                }),
-                pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
-              ],
-
-              if (remarks != null && remarks.isNotEmpty) ...[
-                pw.SizedBox(height: 5),
-                pw.Text('Remarks:', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-                pw.Text(remarks, style: const pw.TextStyle(fontSize: 9)),
-              ],
+              // 8. Terms & Conditions
+              pw.Text('Terms & Conditions', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+              pw.Text('All Cheques to be drawn in favor of "${CompanyInfo.name.toUpperCase()} (PVT) LTD"', style: const pw.TextStyle(fontSize: 9)),
+              pw.Text('Acc Name: ${CompanyInfo.name} Private Limited', style: const pw.TextStyle(fontSize: 9)),
+              pw.Text('AccNo: 1000687772', style: const pw.TextStyle(fontSize: 9)),
+              pw.Text('Bank: Commercial Bank-Kottawa', style: const pw.TextStyle(fontSize: 9)),
               
+              pw.SizedBox(height: 5),
+              pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
+              pw.SizedBox(height: 10),
+
+              // 9. Footer Sign & Seal
+              pw.Text("Receiver's Seal & Sign", style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 15),
-              pw.Center(
-                child: pw.Text('Thank you!', style: const pw.TextStyle(fontSize: 10)),
-              ),
-              pw.SizedBox(height: 20),
+              pw.Text('Thanks for doing business with us !', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 10),
+              pw.Text('Powered By SalesMen Utility', style: pw.TextStyle(fontSize: 9, fontStyle: pw.FontStyle.italic)),
+              pw.SizedBox(height: 10),
             ],
           );
         },
@@ -217,12 +262,13 @@ class ReceiptPdfGenerator {
     return pdf.save();
   }
 
-  static pw.Widget _buildTotalRow(String label, double amount) {
+  static pw.Widget _buildTotalsBreakdownRow(String label, double amount) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
-        pw.Text(label, style: const pw.TextStyle(fontSize: 10)),
-        pw.Text(_money.format(amount), style: const pw.TextStyle(fontSize: 10)),
+        pw.Expanded(child: pw.Text(label, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))),
+        pw.Text(':', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+        pw.Expanded(child: pw.Text(_money.format(amount), textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))),
       ],
     );
   }

@@ -6,6 +6,8 @@ import 'api_service.dart';
 import 'invoice_pdf_generator.dart';
 import 'quotation_pdf_generator.dart';
 import 'sales_order_pdf_generator.dart';
+import 'receipt_pdf_generator.dart';
+import 'bluetooth_printer_service.dart';
 
 class RepDocumentRecallService {
   static Future<Map<String, dynamic>> fetchRecall({
@@ -186,6 +188,110 @@ class RepDocumentRecallService {
           pdfFilenamePrefix: 'CustomerReturn',
         );
         return;
+    }
+  }
+
+  static Future<void> printReceiptFromHistoryEntry({
+    required BuildContext context,
+    required String documentType,
+    required Map<String, dynamic> entry,
+  }) async {
+    if (entry['isPendingSync'] == true) {
+      throw Exception('This document is still pending sync. Sync it first.');
+    }
+
+    final documentNo = entry['documentNo']?.toString().trim() ?? '';
+    if (documentNo.isEmpty) {
+      throw Exception('Document number is missing');
+    }
+
+    final auth = context.read<AuthProvider>();
+    final salesmanName =
+        auth.salesmanName.isNotEmpty ? auth.salesmanName : auth.salesmanCode;
+    final customerCode = entry['customerCode']?.toString();
+    final fallbackCustomerName = entry['customerName']?.toString() ?? customerCode ?? 'Customer';
+
+    final recall = await fetchRecall(
+      documentType: documentType,
+      documentNo: documentNo,
+      customerCode: customerCode,
+    );
+
+    final header = Map<String, dynamic>.from(recall['header'] as Map? ?? {});
+    final details = (recall['details'] as List? ?? [])
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList();
+
+    if (details.isEmpty) {
+      throw Exception('No line items found for this document');
+    }
+
+    final salesType = header['SalesType']?.toString() ?? 'Retail';
+    final locaCode = _resolveLocaCode(header['LocaCode']?.toString());
+    final rows = _documentDetailsToRows(details, locaCode, salesType);
+
+    final grossAmount = _toDouble(header['GrossAmount']);
+    final discAmount = _toDouble(header['DiscAmount']);
+    final taxAmount = _toDouble(header['TaxAmount']);
+    final netAmount = _toDouble(header['NetAmount'], fallback: _toDouble(entry['netAmount']));
+    final discountedAmount = grossAmount > 0 ? grossAmount - discAmount : netAmount - taxAmount;
+    final subtotal = grossAmount > 0 ? grossAmount : discountedAmount + discAmount;
+    final documentDate = _parseDocumentDate(
+      header['DocumentDate']?.toString() ?? entry['documentDate']?.toString(),
+    );
+    final remarks = header['Remarks']?.toString();
+    final customer = {
+      'name': header['CustomerName']?.toString().trim().isNotEmpty == true
+          ? header['CustomerName'].toString()
+          : fallbackCustomerName,
+      'address': header['CustomerAddress']?.toString() ??
+          header['Address']?.toString() ??
+          '',
+      'code': header['CustomerCode']?.toString() ?? customerCode ?? '',
+      'creditPeriod': header['CreditPeriod']?.toString() ??
+          header['creditPeriod']?.toString() ??
+          '0',
+    };
+    
+    // Add correct pricing to rows for ReceiptPdfGenerator since it expects price/qty
+    double getPriceFromRow(Map<String, dynamic> row) {
+      if (row.containsKey('unitPrice') && row.containsKey('wholeSalePrice')) {
+        return salesType == 'Retail'
+            ? _toDouble(row['unitPrice'])
+            : _toDouble(row['wholeSalePrice']);
+      }
+      return _toDouble(row['price']);
+    }
+    
+    for (var row in rows) {
+      row['price'] = getPriceFromRow(row);
+    }
+
+    if (!context.mounted) return;
+    
+    String docTypeLabel = documentType.toUpperCase();
+    if (documentType == 'sales-order') docTypeLabel = 'SALES ORDER';
+    else if (documentType == 'crn') docTypeLabel = 'CUSTOMER RETURN';
+
+    final pdfBytes = await ReceiptPdfGenerator.generateReceiptPDF(
+      docType: docTypeLabel,
+      documentNo: documentNo,
+      documentDate: documentDate,
+      customer: customer,
+      rows: rows,
+      subtotal: subtotal,
+      billDiscountAmount: discAmount,
+      discountedAmount: discountedAmount,
+      taxAmount: taxAmount,
+      netAmount: netAmount,
+      remarks: remarks,
+      salesmanName: salesmanName,
+      poNumber: header['Reference']?.toString(),
+      paymentModes: [],
+    );
+
+    if (context.mounted) {
+      await BluetoothPrinterService.printReceipt(context, pdfBytes);
     }
   }
 

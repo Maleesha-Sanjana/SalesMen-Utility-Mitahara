@@ -76,7 +76,17 @@ class _BluetoothPrinterDialogState extends State<BluetoothPrinterDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Select Bluetooth Printer'),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('Select Bluetooth Printer'),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _isConnecting || _isLoading ? null : _loadPrinters,
+            tooltip: 'Reload Printers',
+          ),
+        ],
+      ),
       content: SizedBox(
         width: double.maxFinite,
         height: 300,
