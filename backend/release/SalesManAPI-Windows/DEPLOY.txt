@@ -1,0 +1,51 @@
+Sales Man Utility - Backend Deployment (Windows)
+================================================
+
+Mobile app URL (already configured in the Flutter app):
+  http://123.231.62.96:3000/api
+
+STEP 1 - Copy folder to Windows server
+--------------------------------------
+Copy this entire folder to the server, for example:
+  C:\SalesManAPI\
+
+STEP 2 - Edit config.js
+-----------------------
+- DB server: use 127.0.0.1 if SQL Server is on the same PC
+- Set database name, user, and password
+
+STEP 3 - Open firewall (PowerShell as Administrator)
+----------------------------------------------------
+  powershell -ExecutionPolicy Bypass -File open-firewall.ps1
+
+STEP 4 - Start the API (choose one)
+-----------------------------------
+Option A - Node.js (recommended first time):
+  Double-click start-with-node.bat
+  Requires Node.js 18 LTS installed on Windows.
+
+Option B - Build .exe on the Windows server:
+  Double-click build-exe-on-windows.bat
+  Then double-click start-api.bat
+
+STEP 5 - Test from mobile data
+------------------------------
+Open on a phone browser:
+  http://123.231.62.96:3000/api/health
+
+STEP 6 - Install mobile app
+---------------------------
+On your dev machine:
+  flutter build apk --release
+
+APK output:
+  build/app/outputs/flutter-apk/app-release.apk
+
+Copy the APK to phones and install.
+
+STEP 7 - Optional auto-start on boot
+------------------------------------
+Run install-service.ps1 after installing NSSM.
+
+Logs:
+  error.log is created in this same folder.

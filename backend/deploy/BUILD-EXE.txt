@@ -1,0 +1,48 @@
+BUILD salesman-api.exe FOR WINDOWS
+==================================
+
+Deployment uses salesman-api.exe on the Windows server.
+Do NOT use GitHub Actions for this project.
+
+Mac cannot build a Windows .exe directly (pkg requires Windows).
+
+WORKFLOW
+--------
+
+STEP 1 - On your Mac
+--------------------
+  cd backend
+  npm install
+  npm run build
+
+This creates backend/dist/ with node_modules and deploy scripts.
+It does NOT create the .exe on Mac.
+
+STEP 2 - Copy to Windows server
+-------------------------------
+Copy the entire backend/dist/ folder to:
+
+  D:\Jazz\Mobile Backend\
+
+STEP 3 - On Windows server
+--------------------------
+Install Node.js 22 LTS (not Node 24):
+  https://nodejs.org/en/download
+
+  copy .env.example .env
+  notepad .env
+
+  build-exe-on-windows.bat
+  start-api.bat
+
+Test:
+  http://123.231.62.96:3000/api/health
+
+OPTIONAL - Portable package from Mac (no .exe)
+----------------------------------------------
+If you need a quick Windows bundle without building .exe:
+
+  npm run package:windows
+
+Output: backend/release/SalesManAPI-Windows.zip
+Uses portable Node.js — not a single .exe file.

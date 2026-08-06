@@ -1,0 +1,241 @@
+Sales Man Utility - Backend Deployment (.exe)
+==============================================
+
+Mobile app URL (production APK must use this):
+  http://123.231.62.96:3000/api
+
+Rules:
+  - Do NOT use GitHub Actions.
+  - Build salesman-api.exe on the Windows server (Node 22 LTS).
+  - Mac only prepares the dist folder.
+
+================================================
+A) FIRST-TIME DEPLOY
+================================================
+
+STEP 1 - Prepare on Mac
+-----------------------
+  cd backend
+  npm install
+  npm run build
+
+Creates:
+  backend/dist/
+
+Includes:
+  server.js, runtime.js, utils/
+  config.js, .env.example
+  node_modules/ (production)
+  build-exe-on-windows.bat
+  start-api.bat
+  start-with-node.bat
+  open-firewall.ps1
+  install-service.ps1
+  prefetch-pkg-base.js
+  DEPLOY.txt
+
+Does NOT create salesman-api.exe on Mac.
+
+STEP 2 - Copy to Windows server
+-------------------------------
+Copy the entire backend/dist/ folder to:
+
+  D:\Jazz\Mobile Backend\
+
+STEP 3 - Configure database (.env)
+----------------------------------
+In Command Prompt on Windows:
+
+  cd "D:\Jazz\Mobile Backend"
+  copy .env.example .env
+  notepad .env
+
+Set real values, for example:
+
+  PORT=3000
+  DB_SERVER=127.0.0.1
+  DB_NAME=ERP_SOLUTIONtst
+  DB_USER=sa
+  DB_PASSWORD=YourRealPassword
+  DB_PORT=1433
+
+Notes:
+  - Use 127.0.0.1 if SQL Server is on the same Windows PC.
+  - Keep .env only on the server. Do not share it.
+  - config.js can stay; it reads values from .env.
+
+STEP 4 - Install Node.js 22 LTS (for building .exe only)
+--------------------------------------------------------
+  https://nodejs.org/en/download
+
+Check:
+
+  node -v
+
+Must show v22.x.x (not v24).
+
+STEP 5 - Build salesman-api.exe
+-------------------------------
+  cd "D:\Jazz\Mobile Backend"
+  build-exe-on-windows.bat
+
+Success message:
+
+  Build complete:
+    D:\Jazz\Mobile Backend\salesman-api.exe
+
+STEP 6 - Open Windows Firewall
+------------------------------
+PowerShell as Administrator:
+
+  cd "D:\Jazz\Mobile Backend"
+  powershell -ExecutionPolicy Bypass -File open-firewall.ps1
+
+STEP 7 - Router port forwarding (for mobile data / public IP)
+-------------------------------------------------------------
+On the office router:
+
+  External port: 3000
+  Internal IP:   <Windows PC LAN IP, e.g. 192.168.8.10>
+  Internal port: 3000
+  Protocol:      TCP
+
+STEP 8 - Start the API
+----------------------
+  start-api.bat
+
+Expected console:
+
+  Server running on http://0.0.0.0:3000
+  Connected to SQL Server database
+
+Keep the window open, OR set auto-start (section C).
+
+STEP 9 - Test
+-------------
+Phone browser (preferably mobile data):
+
+  http://123.231.62.96:3000/api/health
+
+Expected:
+
+  {"status":"OK","message":"POS Solution API is running"}
+
+Then test app login.
+
+STEP 10 - Mobile app URL check
+------------------------------
+In Flutter before release APK:
+
+  lib/services/api_service.dart
+  static const String baseUrl = 'http://123.231.62.96:3000/api';
+
+localhost only works on the same machine (dev), not on phones.
+
+================================================
+B) UPDATE AFTER CODE CHANGES (most common)
+================================================
+
+1) On Mac:
+     cd backend
+     npm install
+     npm run build
+
+2) Copy new backend/dist/ contents to Windows
+   (overwrite files in D:\Jazz\Mobile Backend\)
+
+3) On Windows keep your existing .env (do not overwrite with empty template)
+
+4) Stop the running API (close start-api.bat window or stop scheduled task)
+
+5) Rebuild exe:
+     build-exe-on-windows.bat
+
+6) Start again:
+     start-api.bat
+
+7) Test /api/health and login
+
+================================================
+C) AUTO-START ON WINDOWS BOOT
+================================================
+
+Option 1 - Task Scheduler (recommended, no extra install)
+---------------------------------------------------------
+1. Task Scheduler -> Create Task
+2. General:
+     Name: Sales Man Utility API
+     Run whether user is logged on or not
+3. Triggers:
+     At startup
+4. Actions:
+     Program/script: D:\Jazz\Mobile Backend\salesman-api.exe
+     Start in:       D:\Jazz\Mobile Backend
+5. Conditions:
+     Uncheck "Start only if on AC power" if needed
+6. Settings:
+     Optional: restart on failure
+
+Do NOT schedule start-api.bat unless you remove the final "pause" line.
+Prefer pointing directly at salesman-api.exe.
+
+Option 2 - NSSM Windows service
+-------------------------------
+Install NSSM, then as Administrator:
+
+  powershell -ExecutionPolicy Bypass -File install-service.ps1
+
+================================================
+D) FILES TO KEEP AFTER EXE WORKS
+================================================
+
+Must keep:
+  salesman-api.exe
+  .env
+  config.js          (recommended)
+
+Recommended:
+  start-api.bat
+  open-firewall.ps1
+  install-service.ps1
+  error.log
+
+Safe to delete after successful exe run:
+  node_modules/
+  server.js
+  runtime.js
+  utils/
+  package.json
+  package-lock.json
+  prefetch-pkg-base.js
+  .pkg-cache/
+  build-exe-on-windows.bat   (only if you will not rebuild on this PC)
+  start-with-node.bat
+  DEPLOY.txt
+
+================================================
+E) TROUBLESHOOTING
+================================================
+
+Login SocketException / connection reset
+  - API not running
+  - Firewall not open
+  - Router port forward missing/wrong
+  - Flutter baseUrl is localhost instead of public IP
+
+Database connection failed
+  - Check .env password
+  - SQL Server running on same PC
+  - DB_SERVER=127.0.0.1
+
+build-exe-on-windows.bat fails
+  - Use Node 22 LTS, not Node 24
+  - Internet required once (downloads pkg base binary)
+  - Install Git for Windows if "patch" error appears
+
+Health OK but app still fails
+  - Rebuild/reinstall APK with correct baseUrl
+  - Same public IP as app: 123.231.62.96:3000
+
+Logs:
+  error.log in the same folder as salesman-api.exe
