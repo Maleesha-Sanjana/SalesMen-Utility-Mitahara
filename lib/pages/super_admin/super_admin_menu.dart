@@ -31,7 +31,7 @@ class SuperAdminMenu {
 
   static const List<SuperAdminMenuTab> tabs = [
     SuperAdminMenuTab(
-      title: 'Device Tracking',
+      title: 'Super Admin',
       items: [
         SuperAdminMenuItem(
           icon: Icons.devices_rounded,
@@ -45,12 +45,7 @@ class SuperAdminMenu {
           route: '/super-admin/user-rights',
           color: Color(0xFF7C3AED),
         ),
-        SuperAdminMenuItem(
-          icon: Icons.assignment_ind_rounded,
-          title: 'Assign Customers',
-          route: '/admin/assign-customers',
-          color: Color(0xFF4F46E5),
-        ),
+
         SuperAdminMenuItem(
           icon: Icons.location_on_rounded,
           title: 'Location Tracking',
@@ -68,6 +63,12 @@ class SuperAdminMenu {
     SuperAdminMenuTab(
       title: 'Admin',
       items: [
+        SuperAdminMenuItem(
+          icon: Icons.assignment_ind_rounded,
+          title: 'Assign Customers',
+          route: '/admin/assign-customers',
+          color: Color(0xFF4F46E5),
+        ),
         SuperAdminMenuItem(
           icon: Icons.person_add_alt_1_rounded,
           title: 'User Creation',

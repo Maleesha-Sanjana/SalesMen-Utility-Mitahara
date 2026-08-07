@@ -3480,6 +3480,7 @@ class _SalesOrderPageState extends State<SalesOrderPage>
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
             _dialogSetState = setDialogState;
+            late void Function([Map<String, dynamic>?]) addPendingEntry;
             void refreshSummary() {
               if (selectedItem == null) {
                 setDialogState(() {
@@ -3612,10 +3613,11 @@ class _SalesOrderPageState extends State<SalesOrderPage>
 
               if (selectedItem != null) {
                 refreshSummary();
+                addPendingEntry();
               }
             }
 
-            void addPendingEntry([Map<String, dynamic>? tappedItem]) {
+            addPendingEntry = ([Map<String, dynamic>? tappedItem]) {
               if (tappedItem != null) {
                 selectedItem = tappedItem;
               }
@@ -3693,7 +3695,7 @@ class _SalesOrderPageState extends State<SalesOrderPage>
                 discountSummary = validation.summary;
               });
               resetForm();
-            }
+            };
 
             final visibleItems = hasQuery ? filteredItems : _products;
             final screenSize = MediaQuery.sizeOf(dialogContext);

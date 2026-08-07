@@ -4305,6 +4305,7 @@ class _CrnPageState extends State<CrnPage> with WidgetsBindingObserver {
               extraPending: pendingEntries,
             );
 
+            late void Function([Map<String, dynamic>?]) addPendingEntry;
             void refreshSummary() {
               if (selectedItem == null) {
                 setDialogState(() {
@@ -4425,10 +4426,11 @@ class _CrnPageState extends State<CrnPage> with WidgetsBindingObserver {
 
               if (selectedItem != null) {
                 refreshSummary();
+                addPendingEntry();
               }
             }
 
-            void addPendingEntry([Map<String, dynamic>? tappedItem]) {
+            addPendingEntry = ([Map<String, dynamic>? tappedItem]) {
               if (tappedItem != null) {
                 selectedItem = tappedItem;
               }
@@ -4507,7 +4509,7 @@ class _CrnPageState extends State<CrnPage> with WidgetsBindingObserver {
                 discountSummary = validation.summary;
               });
               resetForm();
-            }
+            };
 
             final visibleItems = hasQuery ? filteredItems : returnItems;
             final screenSize = MediaQuery.sizeOf(dialogContext);

@@ -3312,6 +3312,7 @@ class _QuotationPageState extends State<QuotationPage>
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
             _dialogSetState = setDialogState;
+            late void Function([Map<String, dynamic>?]) addPendingEntry;
             void refreshSummary() {
               if (selectedItem == null) {
                 setDialogState(() {
@@ -3444,10 +3445,11 @@ class _QuotationPageState extends State<QuotationPage>
 
               if (selectedItem != null) {
                 refreshSummary();
+                addPendingEntry();
               }
             }
 
-            void addPendingEntry([Map<String, dynamic>? tappedItem]) {
+            addPendingEntry = ([Map<String, dynamic>? tappedItem]) {
               if (tappedItem != null) {
                 selectedItem = tappedItem;
               }
@@ -3525,7 +3527,7 @@ class _QuotationPageState extends State<QuotationPage>
                 discountSummary = validation.summary;
               });
               resetForm();
-            }
+            };
 
             final visibleItems = hasQuery ? filteredItems : _products;
             final screenSize = MediaQuery.sizeOf(dialogContext);
