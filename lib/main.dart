@@ -35,6 +35,7 @@ import 'pages/sales_order_page.dart';
 import 'pages/quotation_page.dart';
 import 'pages/stock_reports_page.dart';
 import 'pages/my_stock_page.dart';
+import 'pages/super_admin/layout_preview_page.dart';
 import 'pages/admin/assign_customers_page.dart';
 import 'pages/location_wise_stock_page.dart';
 import 'pages/my_history/my_history_invoice_page.dart';
@@ -321,6 +322,7 @@ class MyApp extends StatelessWidget {
           '/location-stock': (_) => const LocationWiseStockPage(),
           '/admin/users': (_) => const AdminUserManagementPage(),
           '/admin/profile': (_) => const AdminProfilePage(),
+          '/super-admin/layout-preview': (_) => const LayoutPreviewPage(),
           '/super-admin/user-rights': (_) => const SuperAdminUseRightsPage(),
           '/admin/user-rights': (_) => const SuperAdminUseRightsPage(),
           '/admin/assign-customers': (_) => const AssignCustomersPage(),

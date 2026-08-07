@@ -38,8 +38,8 @@ class _CustomerCreationPageState extends State<CustomerCreationPage> {
   final _city = TextEditingController();
   final _mobile = TextEditingController();
   final _nic = TextEditingController();
-  final _creditLimit = TextEditingController(text: '25000');
-  final _creditPeriod = TextEditingController(text: '14');
+  final _creditLimit = TextEditingController(text: '0');
+  final _creditPeriod = TextEditingController(text: '0');
   String _customerType = 'Trade';
   String _taxGroupCode = '1';
   double? _latitude;
@@ -580,8 +580,8 @@ class _CustomerCreationPageState extends State<CustomerCreationPage> {
       _nic.clear();
       _customerType = 'Trade';
       _taxGroupCode = '1';
-      _creditLimit.text = '25000';
-      _creditPeriod.text = '14';
+      _creditLimit.text = '0';
+      _creditPeriod.text = '0';
       _latitude = null;
       _longitude = null;
       _searchResults = [];

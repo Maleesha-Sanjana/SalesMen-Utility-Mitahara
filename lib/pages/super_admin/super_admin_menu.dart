@@ -58,6 +58,12 @@ class SuperAdminMenu {
           route: '/super-admin/admin/salesman-location-history',
           color: Color(0xFF7C3AED),
         ),
+        SuperAdminMenuItem(
+          icon: Icons.preview_rounded,
+          title: 'Layout Preview',
+          route: '/super-admin/layout-preview',
+          color: Color(0xFFF59E0B),
+        ),
       ],
     ),
     SuperAdminMenuTab(

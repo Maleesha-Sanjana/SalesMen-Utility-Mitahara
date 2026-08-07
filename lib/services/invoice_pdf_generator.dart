@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
@@ -164,7 +165,7 @@ class InvoicePdfGenerator {
     return parts.isEmpty ? '—' : parts.join('  |  ');
   }
 
-  static Future<void> generatePDF({
+  static Future<Uint8List> generatePDF({
     required String documentNo,
     required DateTime documentDate,
     required Map<String, dynamic> customer,
@@ -293,7 +294,7 @@ class InvoicePdfGenerator {
     );
 
     final bytes = await pdf.save();
-    if (!preview) return;
+    if (!preview) return bytes;
 
     if (context != null && context.mounted) {
       await PdfPreviewService.show(
@@ -301,8 +302,10 @@ class InvoicePdfGenerator {
         bytes: bytes,
         filename: '${pdfFilenamePrefix}_$documentNo.pdf',
       );
-      return;
+      return bytes;
     }
+    
+    return bytes;
 
     await Printing.layoutPdf(
       name: '${pdfFilenamePrefix}_$documentNo.pdf',

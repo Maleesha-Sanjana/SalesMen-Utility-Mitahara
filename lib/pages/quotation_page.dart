@@ -3450,7 +3450,8 @@ class _QuotationPageState extends State<QuotationPage>
             }
 
             addPendingEntry = ([Map<String, dynamic>? tappedItem]) {
-              if (tappedItem != null) {
+              final isFromGridTap = tappedItem != null;
+              if (isFromGridTap) {
                 selectedItem = tappedItem;
               }
 
@@ -3512,12 +3513,17 @@ class _QuotationPageState extends State<QuotationPage>
 
                 if (existingIndex >= 0) {
                   final existing = pendingEntries[existingIndex];
-                  existing['qty'] =
-                      ((existing['qty'] as num?)?.toInt() ?? 0) +
-                      (validation.quantity ?? 0);
-                  existing['freeQty'] =
-                      ((existing['freeQty'] as num?)?.toInt() ?? 0) +
-                      (validation.freeQuantity ?? 0);
+                  if (isFromGridTap) {
+                    existing['qty'] =
+                        ((existing['qty'] as num?)?.toInt() ?? 0) +
+                        (validation.quantity ?? 0);
+                    existing['freeQty'] =
+                        ((existing['freeQty'] as num?)?.toInt() ?? 0) +
+                        (validation.freeQuantity ?? 0);
+                  } else {
+                    existing['qty'] = validation.quantity ?? 0;
+                    existing['freeQty'] = validation.freeQuantity ?? 0;
+                  }
                   existing['discount'] = validation.discountLabel;
                   existing['price'] = validation.finalPrice;
                 } else {
@@ -3526,7 +3532,10 @@ class _QuotationPageState extends State<QuotationPage>
                 errorText = null;
                 discountSummary = validation.summary;
               });
-              resetForm();
+              
+              if (isFromGridTap) {
+                resetForm();
+              }
             };
 
             final visibleItems = hasQuery ? filteredItems : _products;

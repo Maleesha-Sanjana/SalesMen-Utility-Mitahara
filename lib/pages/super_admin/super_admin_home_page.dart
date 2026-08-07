@@ -31,6 +31,7 @@ import '../stock_reports_page.dart';
 import 'superAdminUserRights.dart';
 import 'superAdminprofile.dart';
 import 'super_admin_menu.dart';
+import 'layout_preview_page.dart';
 
 class SuperAdminHomePage extends StatefulWidget {
   const SuperAdminHomePage({super.key});
@@ -209,6 +210,8 @@ class _SuperAdminHomePageState extends State<SuperAdminHomePage> {
         return SalesmanWiseLocationPage(appBarLeading: menuButton);
       case '/super-admin/admin/users':
         return AdminUserManagementPage(appBarLeading: menuButton);
+      case '/super-admin/layout-preview':
+        return LayoutPreviewPage(appBarLeading: menuButton);
       case '/admin/assign-customers':
         return AssignCustomersPage(appBarLeading: menuButton);
       case '/super-admin/user-rights':
