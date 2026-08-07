@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -5,10 +6,28 @@ import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:image/image.dart' as img;
 import 'package:printing/printing.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../widgets/bluetooth_printer_dialog.dart';
 
 class BluetoothPrinterService {
   static const String _prefKey = 'saved_bluetooth_printer_mac';
+
+  /// Ensure Bluetooth and Location permissions are granted
+  static Future<bool> ensurePermissions() async {
+    if (!Platform.isAndroid) return true;
+    
+    // Android 12+ specific permissions
+    await [
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+    ].request();
+    
+    // Older Androids need location for bluetooth scanning
+    await Permission.locationWhenInUse.request();
+    await Permission.bluetooth.request();
+    
+    return true;
+  }
 
   /// Scan for paired bluetooth devices
   static Future<List<BluetoothInfo>> getPairedPrinters() async {
@@ -51,6 +70,8 @@ class BluetoothPrinterService {
   /// Takes PDF bytes, rasterizes them to an image, converts to ESC/POS, and prints over Bluetooth.
   static Future<void> printReceipt(BuildContext context, Uint8List pdfBytes) async {
     try {
+      await ensurePermissions();
+
       if (!(await isConnected())) {
         if (!(await autoConnect())) {
           if (!context.mounted) return;
