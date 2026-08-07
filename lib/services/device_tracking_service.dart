@@ -20,7 +20,7 @@ class DeviceRegistrationResult {
     required this.allowed,
     required this.isAllowed,
     required this.message,
-    this.maxAllowed = 5,
+    this.maxAllowed = 3,
   });
 
   factory DeviceRegistrationResult.fromJson(Map<String, dynamic> json) {
@@ -32,7 +32,7 @@ class DeviceRegistrationResult {
       allowed: allowedFlag,
       isAllowed: allowedFlag ? 1 : 0,
       message: json['message']?.toString() ?? '',
-      maxAllowed: (json['maxAllowed'] as num?)?.toInt() ?? 5,
+      maxAllowed: (json['maxAllowed'] as num?)?.toInt() ?? 3,
     );
   }
 }
@@ -213,7 +213,7 @@ class DeviceTrackingService {
           .map((item) => Map<String, dynamic>.from(item))
           .toList();
       return DeviceTrackingSummary(
-        maxAllowed: 5,
+        maxAllowed: 3,
         allowedCount: devices.where(deviceIsAllowed).length,
         pendingCount: devices.where((d) => !deviceIsAllowed(d)).length,
         devices: devices,
@@ -227,7 +227,7 @@ class DeviceTrackingService {
         .toList();
 
     return DeviceTrackingSummary(
-      maxAllowed: (map['maxAllowed'] as num?)?.toInt() ?? 5,
+      maxAllowed: (map['maxAllowed'] as num?)?.toInt() ?? 3,
       allowedCount: (map['allowedCount'] as num?)?.toInt() ??
           (map['approvedCount'] as num?)?.toInt() ??
           devices.where(deviceIsAllowed).length,

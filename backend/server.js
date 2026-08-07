@@ -11,6 +11,7 @@ const { getNewDeviceLoginEmailHtml } = require('./utils/emailTemplate');
 const resend = new Resend('re_PN6gqU1e_Kz4C2TzoFeZ52ZaUBnXvrNK7'); // Using provided API key
 
 const errorLogger = require('./utils/errorLogger');
+const runSchemaMigrations = require('./initDatabase');
 
 errorLogger.initialize();
 
@@ -371,6 +372,7 @@ async function initializeDatabase() {
       console.log(`🔌 Attempting to connect to database (${6-retries}/5)...`);
       pool = await sql.connect(config);
       console.log('✅ Connected to SQL Server database');
+      await runSchemaMigrations(pool);
       await ensureUserLocTable();
       console.log('✅ Location tracking table ready');
       await ensureAssignedColumnInCustomer();
@@ -4836,29 +4838,25 @@ const server = http.createServer(app);
 // Initialize WebSocket server
 initializeWebSocket(server);
 
-const initializeDatabase = require('./initDatabase');
-
 // Start server
-initializeDatabase().then(() => {
-  server.listen(PORT, '0.0.0.0', () => {
-    const os = require('os');
-    const nets = os.networkInterfaces();
-    let serverIP = 'localhost';
-    
-    // Find the first non-internal IPv4 address
-    Object.keys(nets).forEach(name => {
-      nets[name].forEach(net => {
-        if (net.family === 'IPv4' && !net.internal) {
-          serverIP = net.address;
-        }
-      });
+server.listen(PORT, '0.0.0.0', () => {
+  const os = require('os');
+  const nets = os.networkInterfaces();
+  let serverIP = 'localhost';
+  
+  // Find the first non-internal IPv4 address
+  Object.keys(nets).forEach(name => {
+    nets[name].forEach(net => {
+      if (net.family === 'IPv4' && !net.internal) {
+        serverIP = net.address;
+      }
     });
-    
-    console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
-    console.log(`📊 API endpoints available at http://localhost:${PORT}/api/`);
-    console.log(`📊 Network access available at http://${serverIP}:${PORT}/api/`);
-    console.log(`🔌 WebSocket server available at ws://${serverIP}:${PORT}/ws`);
   });
+  
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+  console.log(`📊 API endpoints available at http://localhost:${PORT}/api/`);
+  console.log(`📊 Network access available at http://${serverIP}:${PORT}/api/`);
+  console.log(`🔌 WebSocket server available at ws://${serverIP}:${PORT}/ws`);
 });
 
 // ==================== INVOICE POSTING ====================
@@ -6210,7 +6208,7 @@ app.delete('/api/location/user/:userCode', async (req, res) => {
 
 // ==================== DEVICE TRACKING ====================
 
-const MAX_ALLOWED_DEVICES = 5;
+const MAX_ALLOWED_DEVICES = 3;
 
 async function ensureUserDeviceTable(request) {
   await request.query(`

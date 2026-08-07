@@ -1,12 +1,6 @@
-const sql = require('mssql');
-const config = require('./config'); // Assuming config is available
-
-async function initializeDatabase() {
+async function initializeDatabase(pool) {
     console.log('Initializing database schema...');
-    let pool;
     try {
-        pool = await sql.connect(config);
-        
         const migrationQuery = `
 -- 1. Add isAdmin, isSuper, password, isLogged, salesmanImg columns to gen_salesman
 IF COL_LENGTH('gen_salesman', 'isAdmin') IS NULL

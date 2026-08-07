@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
@@ -166,7 +167,7 @@ class QuotationPdfGenerator {
     return parts.isEmpty ? '—' : parts.join('  |  ');
   }
 
-  static Future<void> generatePDF({
+  static Future<Uint8List> generatePDF({
     required String documentNo,
     required DateTime documentDate,
     required Map<String, dynamic> customer,
@@ -232,7 +233,7 @@ class QuotationPdfGenerator {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.fromLTRB(36, 32, 36, 32),
+        margin: const pw.EdgeInsets.fromLTRB(64, 32, 36, 32),
         build: (pw.Context context) {
           return [
             _buildHeader(
@@ -267,7 +268,7 @@ class QuotationPdfGenerator {
     );
 
     final bytes = await pdf.save();
-    if (!preview) return;
+    if (!preview) return bytes;
 
     if (context != null && context.mounted) {
       await PdfPreviewService.show(
@@ -275,13 +276,10 @@ class QuotationPdfGenerator {
         bytes: bytes,
         filename: 'Quotation_$documentNo.pdf',
       );
-      return;
+      return bytes;
     }
 
-    await Printing.layoutPdf(
-      name: 'Quotation_$documentNo.pdf',
-      onLayout: (PdfPageFormat format) async => bytes,
-    );
+    return bytes;
   }
 
   static pw.Widget _buildHeader({
@@ -299,54 +297,60 @@ class QuotationPdfGenerator {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Image(logoImage, height: 36, fit: pw.BoxFit.contain),
-              pw.SizedBox(height: 8),
-              pw.Text(
-                CompanyInfo.name,
-                style: pw.TextStyle(
-                  fontSize: 11,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+              pw.Stack(
+                children: [
+                  pw.Positioned(left: -0.5, top: -0.5, child: pw.Text('QUOTATION', style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5, color: PdfColors.black))),
+                  pw.Positioned(left: 0.5, top: -0.5, child: pw.Text('QUOTATION', style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5, color: PdfColors.black))),
+                  pw.Positioned(left: -0.5, top: 0.5, child: pw.Text('QUOTATION', style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5, color: PdfColors.black))),
+                  pw.Positioned(left: 0.5, top: 0.5, child: pw.Text('QUOTATION', style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5, color: PdfColors.black))),
+                  pw.Text('QUOTATION', style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5, color: PdfColors.white)),
+                ],
               ),
-              pw.SizedBox(height: 2),
-              pw.Text(
-                '${CompanyInfo.addressLine1}, ${CompanyInfo.addressLine2}',
-                style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700),
+              pw.SizedBox(height: 10),
+              _metaRow('Quotation No:', documentNo),
+              _metaRow('Date:', _date.format(documentDate)),
+              _metaRow(
+                'Validity:',
+                '$validityDays Days (Until ${_date.format(validUntil)})',
               ),
-              pw.Text(
-                'Tel: ${_formatPhone(CompanyInfo.phone)}',
-                style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700),
-              ),
-              pw.Text(
-                'Email: ${CompanyInfo.email}',
-                style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700),
-              ),
-              pw.Text(
-                'Reg No: ${CompanyInfo.registrationNumber}',
-                style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700),
-              ),
+              _metaRow('Credit Period:', '$creditDays Days'),
             ],
           ),
         ),
         pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
+            pw.Image(logoImage, height: 36, fit: pw.BoxFit.contain, alignment: pw.Alignment.topRight),
+            pw.SizedBox(height: 8),
             pw.Text(
-              'QUOTATION',
+              CompanyInfo.name,
               style: pw.TextStyle(
-                fontSize: 22,
+                fontSize: 11,
                 fontWeight: pw.FontWeight.bold,
-                letterSpacing: 0.5,
               ),
+              textAlign: pw.TextAlign.right,
             ),
-            pw.SizedBox(height: 10),
-            _metaRow('Quotation No:', documentNo),
-            _metaRow('Date:', _date.format(documentDate)),
-            _metaRow(
-              'Validity:',
-              '$validityDays Days (Until ${_date.format(validUntil)})',
+            pw.SizedBox(height: 2),
+            pw.Text(
+              '${CompanyInfo.addressLine1}, ${CompanyInfo.addressLine2}',
+              style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700),
+              textAlign: pw.TextAlign.right,
             ),
-            _metaRow('Credit Period:', '$creditDays Days'),
+            pw.Text(
+              'Tel: ${_formatPhone(CompanyInfo.phone)}',
+              style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700),
+              textAlign: pw.TextAlign.right,
+            ),
+            pw.Text(
+              'Email: ${CompanyInfo.email}',
+              style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700),
+              textAlign: pw.TextAlign.right,
+            ),
+            pw.Text(
+              'Reg No: ${CompanyInfo.registrationNumber}',
+              style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700),
+              textAlign: pw.TextAlign.right,
+            ),
           ],
         ),
       ],
@@ -425,7 +429,7 @@ class QuotationPdfGenerator {
     final headerStyle = pw.TextStyle(
       fontSize: 7.5,
       fontWeight: pw.FontWeight.bold,
-      color: PdfColors.white,
+      color: PdfColors.black,
     );
     final cellStyle = const pw.TextStyle(fontSize: 7.5);
 
@@ -454,6 +458,7 @@ class QuotationPdfGenerator {
     }
 
     return pw.Table(
+      border: pw.TableBorder.all(color: PdfColors.black, width: 0.5),
       columnWidths: {
         0: const pw.FlexColumnWidth(1.1),
         1: const pw.FlexColumnWidth(3.2),
@@ -464,7 +469,7 @@ class QuotationPdfGenerator {
       },
       children: [
         pw.TableRow(
-          decoration: const pw.BoxDecoration(color: PdfColors.grey900),
+          decoration: const pw.BoxDecoration(color: PdfColors.grey100),
           children: [
             headerCell('CODE'),
             headerCell('DESCRIPTION'),
@@ -475,12 +480,8 @@ class QuotationPdfGenerator {
           ],
         ),
         ...lines.asMap().entries.map((entry) {
-          final i = entry.key;
           final line = entry.value;
           return pw.TableRow(
-            decoration: pw.BoxDecoration(
-              color: i.isOdd ? PdfColors.grey100 : PdfColors.white,
-            ),
             children: [
               cell(line.code),
               cell(line.description),
@@ -515,19 +516,6 @@ class QuotationPdfGenerator {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                'Terms & Conditions:',
-                style: pw.TextStyle(
-                  fontSize: 8.5,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.SizedBox(height: 4),
-              _bullet(
-                'This quotation is valid for $validityDays days from the date of issue.',
-              ),
-              _bullet('All prices are listed in Sri Lankan Rupees (LKR).'),
-              _bullet('This is a system-generated quotation.'),
               if (remarks != null && remarks.trim().isNotEmpty) ...[
                 pw.SizedBox(height: 8),
                 pw.Text(
@@ -548,7 +536,10 @@ class QuotationPdfGenerator {
               if (taxAmount > 0) _totalRow('Tax', taxAmount),
               pw.SizedBox(height: 4),
               pw.Container(
-                color: PdfColors.grey900,
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.white,
+                  border: pw.Border.all(color: PdfColors.black, width: 1),
+                ),
                 padding: const pw.EdgeInsets.symmetric(
                   horizontal: 8,
                   vertical: 7,
@@ -561,7 +552,7 @@ class QuotationPdfGenerator {
                       style: pw.TextStyle(
                         fontSize: 9,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.white,
+                        color: PdfColors.black,
                       ),
                     ),
                     pw.Text(
@@ -569,7 +560,7 @@ class QuotationPdfGenerator {
                       style: pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.white,
+                        color: PdfColors.black,
                       ),
                     ),
                   ],
@@ -656,8 +647,6 @@ class QuotationPdfGenerator {
     return pw.Row(
       children: [
         sigBlock('PREPARED BY', name: salesmanName),
-        pw.SizedBox(width: 40),
-        sigBlock('AUTHORIZED BY'),
       ],
     );
   }

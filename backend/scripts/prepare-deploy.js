@@ -33,6 +33,7 @@ fs.mkdirSync(distDir, { recursive: true });
 const runtimeFiles = [
   'server.js',
   'runtime.js',
+  'initDatabase.js',
   'package.json',
   'package-lock.json',
 ];

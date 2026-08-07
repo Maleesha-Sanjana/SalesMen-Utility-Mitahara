@@ -253,7 +253,7 @@ class InvoicePdfGenerator {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.fromLTRB(36, 32, 36, 32),
+        margin: const pw.EdgeInsets.fromLTRB(64, 32, 36, 32),
         build: (pw.Context context) {
           return [
             _buildHeader(
@@ -286,7 +286,7 @@ class InvoicePdfGenerator {
                 paymentRows: paymentRows,
                 netAmount: payable,
               ),
-            pw.SizedBox(height: 36),
+            pw.SizedBox(height: 15),
             _buildSignatures(salesmanName),
           ];
         },
@@ -328,62 +328,68 @@ class InvoicePdfGenerator {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Image(logoImage, height: 36, fit: pw.BoxFit.contain),
-              pw.SizedBox(height: 8),
-              pw.Text(
-                CompanyInfo.name,
-                style: pw.TextStyle(
-                  fontSize: 11,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+              pw.Stack(
+                children: [
+                  pw.Positioned(left: -0.5, top: -0.5, child: pw.Text(documentTitle, style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5, color: PdfColors.black))),
+                  pw.Positioned(left: 0.5, top: -0.5, child: pw.Text(documentTitle, style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5, color: PdfColors.black))),
+                  pw.Positioned(left: -0.5, top: 0.5, child: pw.Text(documentTitle, style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5, color: PdfColors.black))),
+                  pw.Positioned(left: 0.5, top: 0.5, child: pw.Text(documentTitle, style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5, color: PdfColors.black))),
+                  pw.Text(documentTitle, style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5, color: PdfColors.white)),
+                ],
               ),
-              pw.SizedBox(height: 2),
-              pw.Text(
-                '${CompanyInfo.addressLine1}, ${CompanyInfo.addressLine2}',
-                style: const pw.TextStyle(
-                  fontSize: 8.5,
-                  color: PdfColors.grey700,
-                ),
-              ),
-              pw.Text(
-                'Tel: ${_formatPhone(CompanyInfo.phone)}',
-                style: const pw.TextStyle(
-                  fontSize: 8.5,
-                  color: PdfColors.grey700,
-                ),
-              ),
-              pw.Text(
-                'Email: ${CompanyInfo.email}',
-                style: const pw.TextStyle(
-                  fontSize: 8.5,
-                  color: PdfColors.grey700,
-                ),
-              ),
-              pw.Text(
-                'Reg No: ${CompanyInfo.registrationNumber}',
-                style: const pw.TextStyle(
-                  fontSize: 8.5,
-                  color: PdfColors.grey700,
-                ),
-              ),
+              pw.SizedBox(height: 10),
+              _metaRow('$documentNoLabel:', documentNo),
+              _metaRow('Date:', _date.format(documentDate)),
+              _metaRow('Credit Period:', '$creditDays Days'),
             ],
           ),
         ),
         pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
+            pw.Image(logoImage, height: 36, fit: pw.BoxFit.contain, alignment: pw.Alignment.topRight),
+            pw.SizedBox(height: 8),
             pw.Text(
-              documentTitle,
+              CompanyInfo.name,
               style: pw.TextStyle(
-                fontSize: 22,
+                fontSize: 11,
                 fontWeight: pw.FontWeight.bold,
-                letterSpacing: 0.5,
               ),
+              textAlign: pw.TextAlign.right,
             ),
-            pw.SizedBox(height: 10),
-            _metaRow('$documentNoLabel:', documentNo),
-            _metaRow('Date:', _date.format(documentDate)),
-            _metaRow('Credit Period:', '$creditDays Days'),
+            pw.SizedBox(height: 2),
+            pw.Text(
+              '${CompanyInfo.addressLine1}, ${CompanyInfo.addressLine2}',
+              style: const pw.TextStyle(
+                fontSize: 8.5,
+                color: PdfColors.grey700,
+              ),
+              textAlign: pw.TextAlign.right,
+            ),
+            pw.Text(
+              'Tel: ${_formatPhone(CompanyInfo.phone)}',
+              style: const pw.TextStyle(
+                fontSize: 8.5,
+                color: PdfColors.grey700,
+              ),
+              textAlign: pw.TextAlign.right,
+            ),
+            pw.Text(
+              'Email: ${CompanyInfo.email}',
+              style: const pw.TextStyle(
+                fontSize: 8.5,
+                color: PdfColors.grey700,
+              ),
+              textAlign: pw.TextAlign.right,
+            ),
+            pw.Text(
+              'Reg No: ${CompanyInfo.registrationNumber}',
+              style: const pw.TextStyle(
+                fontSize: 8.5,
+                color: PdfColors.grey700,
+              ),
+              textAlign: pw.TextAlign.right,
+            ),
           ],
         ),
       ],
@@ -459,7 +465,7 @@ class InvoicePdfGenerator {
     final headerStyle = pw.TextStyle(
       fontSize: 7.5,
       fontWeight: pw.FontWeight.bold,
-      color: PdfColors.white,
+      color: PdfColors.black,
     );
     const cellStyle = pw.TextStyle(fontSize: 7.5);
 
@@ -488,6 +494,7 @@ class InvoicePdfGenerator {
     }
 
     return pw.Table(
+      border: pw.TableBorder.all(color: PdfColors.black, width: 0.5),
       columnWidths: {
         0: const pw.FlexColumnWidth(1.1),
         1: const pw.FlexColumnWidth(3.2),
@@ -498,7 +505,7 @@ class InvoicePdfGenerator {
       },
       children: [
         pw.TableRow(
-          decoration: const pw.BoxDecoration(color: PdfColors.grey900),
+          decoration: const pw.BoxDecoration(color: PdfColors.grey100),
           children: [
             headerCell('CODE'),
             headerCell('DESCRIPTION'),
@@ -509,12 +516,8 @@ class InvoicePdfGenerator {
           ],
         ),
         ...lines.asMap().entries.map((entry) {
-          final i = entry.key;
           final line = entry.value;
           return pw.TableRow(
-            decoration: pw.BoxDecoration(
-              color: i.isOdd ? PdfColors.grey100 : PdfColors.white,
-            ),
             children: [
               cell(line.code),
               cell(line.description),
@@ -550,15 +553,6 @@ class InvoicePdfGenerator {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                'Terms & Conditions:',
-                style: pw.TextStyle(
-                  fontSize: 8.5,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.SizedBox(height: 4),
-              ...terms.map(_bullet),
               if (remarks != null && remarks.trim().isNotEmpty) ...[
                 pw.SizedBox(height: 8),
                 pw.Text(
@@ -579,7 +573,10 @@ class InvoicePdfGenerator {
               if (taxAmount > 0) _totalRow('Tax', taxAmount),
               pw.SizedBox(height: 4),
               pw.Container(
-                color: PdfColors.grey900,
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.white,
+                  border: pw.Border.all(color: PdfColors.black, width: 1),
+                ),
                 padding: const pw.EdgeInsets.symmetric(
                   horizontal: 8,
                   vertical: 7,
@@ -592,7 +589,7 @@ class InvoicePdfGenerator {
                       style: pw.TextStyle(
                         fontSize: 9,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.white,
+                        color: PdfColors.black,
                       ),
                     ),
                     pw.Text(
@@ -600,7 +597,7 @@ class InvoicePdfGenerator {
                       style: pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.white,
+                        color: PdfColors.black,
                       ),
                     ),
                   ],
@@ -785,8 +782,6 @@ class InvoicePdfGenerator {
     return pw.Row(
       children: [
         sigBlock('PREPARED BY', name: salesmanName),
-        pw.SizedBox(width: 40),
-        sigBlock('AUTHORIZED BY'),
       ],
     );
   }
