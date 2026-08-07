@@ -36,9 +36,9 @@ class ReceiptPdfGenerator {
       // Ignore if logo not found
     }
 
-    // 104mm width for TechnoPos TP-P816
+    // Standard 80mm thermal printer printable width is ~72mm
     final format = PdfPageFormat(
-      104 * PdfPageFormat.mm,
+      72 * PdfPageFormat.mm,
       double.infinity,
       marginAll: 2 * PdfPageFormat.mm,
     );
@@ -147,11 +147,11 @@ class ReceiptPdfGenerator {
               // 5. Items Header
               pw.Row(
                 children: [
-                  pw.SizedBox(width: 15, child: pw.Text('#', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 4, child: pw.Text('Name', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 2, child: pw.Text('Qty', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 2, child: pw.Text('Price', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 3, child: pw.Text('Amount', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                  pw.SizedBox(width: 15, child: pw.Text('#', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 4, child: pw.Text('Name', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 2, child: pw.Text('Qty', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 2, child: pw.Text('Price', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 3, child: pw.Text('Amount', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
                 ],
               ),
               pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
@@ -163,7 +163,7 @@ class ReceiptPdfGenerator {
                 final row = entry.value;
                 final qty = double.tryParse(row['qty']?.toString() ?? '0') ?? 0.0;
                 final price = double.tryParse(row['price']?.toString() ?? '0') ?? 0.0;
-                final itemName = row['productName'] ?? row['item_name'] ?? row['name'] ?? '';
+                final itemName = _productName(row);
                 final unit = row['unit'] ?? 'Pac'; // Fallback if no unit
                 
                 final lineTotal = (price * qty); // Using simple price*qty to match amount, subtract discount if needed
@@ -186,11 +186,19 @@ class ReceiptPdfGenerator {
                     pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.SizedBox(width: 15, child: pw.Text('$index', style: const pw.TextStyle(fontSize: 9))),
-                        pw.Expanded(flex: 4, child: pw.Text('$itemName', style: const pw.TextStyle(fontSize: 9))),
-                        pw.Expanded(flex: 2, child: pw.Text('${qty.toStringAsFixed(0)} $unit', textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 9))),
-                        pw.Expanded(flex: 2, child: pw.Text(price > 0 ? _money.format(price) : '', textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 9))),
-                        pw.Expanded(flex: 3, child: pw.Text(_money.format(finalAmount), textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 9))),
+                        pw.SizedBox(width: 15, child: pw.Text('$index', style: const pw.TextStyle(fontSize: 8))),
+                        pw.Expanded(
+                          flex: 4, 
+                          child: pw.Text(
+                            itemName, 
+                            style: const pw.TextStyle(fontSize: 8),
+                            maxLines: 1,
+                            overflow: pw.TextOverflow.clip,
+                          ),
+                        ),
+                        pw.Expanded(flex: 2, child: pw.Text(qty.toStringAsFixed(0), textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 8))),
+                        pw.Expanded(flex: 2, child: pw.Text(price > 0 ? _money.format(price) : '', textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 8))),
+                        pw.Expanded(flex: 3, child: pw.Text(_money.format(finalAmount), textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 8))),
                       ],
                     ),
                     if (lineDiscVal > 0)
@@ -247,11 +255,20 @@ class ReceiptPdfGenerator {
               pw.SizedBox(height: 10),
 
               // 9. Footer Sign & Seal
+              pw.SizedBox(height: 80), // Space for seal and sign ABOVE the label
               pw.Text("Receiver's Seal & Sign", style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 15),
               pw.Text('Thanks for doing business with us !', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 10),
-              pw.Text('Powered By SalesMen Utility', style: pw.TextStyle(fontSize: 9, fontStyle: pw.FontStyle.italic)),
+              pw.Center(
+                child: pw.Column(
+                  children: [
+                    pw.Text('System By Jazz Business Solution (pvt)Ltd', style: pw.TextStyle(fontSize: 8)),
+                    pw.SizedBox(height: 2),
+                    pw.Text('(c) www.jazz.lk TEL.0112886832/0777785523', style: pw.TextStyle(fontSize: 8)),
+                  ]
+                )
+              ),
               pw.SizedBox(height: 10),
             ],
           );
@@ -272,4 +289,15 @@ class ReceiptPdfGenerator {
       ],
     );
   }
+
+  static String _productName(Map<String, dynamic> row) {
+    final name = (row['productName'] ?? row['item_name'] ?? row['name'])?.toString().trim() ?? '';
+    if (name.isNotEmpty) return name.toUpperCase();
+    final item = row['item']?.toString() ?? '';
+    if (item.contains('•')) {
+      return item.split('•').skip(1).join('•').trim().toUpperCase();
+    }
+    return item.toUpperCase();
+  }
 }
+

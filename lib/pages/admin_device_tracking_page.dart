@@ -20,7 +20,7 @@ class _AdminDeviceTrackingPageState extends State<AdminDeviceTrackingPage> {
   bool _isLoading = true;
   String? _error;
   String _typeFilter = 'All';
-  int _maxAllowed = 5;
+  int _maxAllowed = 3;
   int _allowedCount = 0;
   int _pendingCount = 0;
   List<Map<String, dynamic>> _devices = [];

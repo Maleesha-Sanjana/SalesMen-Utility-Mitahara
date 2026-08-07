@@ -4781,6 +4781,56 @@ class _InvoiceSimplePageState extends State<InvoiceSimplePage>
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: discountController,
+                                    readOnly: true,
+                                    onTap: () => openNumberEntry(
+                                      title: useAmountDiscount ? 'Enter Flat Discount' : 'Enter Discount (%)',
+                                      controller: discountController,
+                                      allowDecimal: true,
+                                    ),
+                                    decoration: InputDecoration(
+                                      labelText: useAmountDiscount ? 'Discount (Flat)' : 'Discount (%)',
+                                      prefixIcon: Icon(useAmountDiscount ? Icons.money_off_rounded : Icons.percent_rounded),
+                                      suffixIcon: const Icon(Icons.edit_rounded),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                IconButton(
+                                  onPressed: () {
+                                    setDialogState(() {
+                                      useAmountDiscount = !useAmountDiscount;
+                                      refreshSummary();
+                                      if (selectedItem != null) addPendingEntry(selectedItem!);
+                                    });
+                                  },
+                                  icon: Icon(useAmountDiscount ? Icons.percent_rounded : Icons.money_off_rounded),
+                                  tooltip: useAmountDiscount ? 'Switch to % Discount' : 'Switch to Flat Discount',
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.primaryContainer,
+                                    foregroundColor: theme.colorScheme.onPrimaryContainer,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (discountSummary != null) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                discountSummary!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                             if (errorText != null) ...[
                               const SizedBox(height: 10),
                               Text(

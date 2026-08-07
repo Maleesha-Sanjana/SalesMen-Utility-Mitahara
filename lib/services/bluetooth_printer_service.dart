@@ -102,9 +102,10 @@ class BluetoothPrinterService {
         final decodedImage = img.decodeImage(imageBytes);
         if (decodedImage == null) throw Exception("Failed to decode PDF image");
 
-        // Create a white background image and composite the decoded image on top
-        // This fixes the issue where transparent PDF backgrounds print as black on thermal printers
-        final printImage = img.Image(width: decodedImage.width, height: decodedImage.height);
+        // We must ensure the width is a multiple of 8 to bypass a bug in esc_pos_utils_plus 2.0.4
+        // where it crashes on fixed-length lists if the width isn't divisible by 8.
+        final targetWidth = (decodedImage.width + 7) ~/ 8 * 8;
+        final printImage = img.Image(width: targetWidth, height: decodedImage.height);
         img.fill(printImage, color: img.ColorRgb8(255, 255, 255));
         img.compositeImage(printImage, decodedImage);
 
@@ -117,7 +118,7 @@ class BluetoothPrinterService {
         List<int> bytes = [];
         
         bytes += generator.imageRaster(printImage);
-        bytes += generator.feed(2);
+        bytes += generator.feed(5);
         bytes += generator.cut();
 
         // 4. Send to printer
