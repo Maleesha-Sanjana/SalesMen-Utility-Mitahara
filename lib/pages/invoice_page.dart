@@ -4263,6 +4263,7 @@ class _InvoiceSimplePageState extends State<InvoiceSimplePage>
           builder: (dialogContext, setDialogState) {
             // Allow async loader to refresh dialog UI when products finish loading
             _dialogSetState = setDialogState;
+            late void Function([Map<String, dynamic>?]) addPendingEntry;
             // Force initial rebuild (in case products state changed before dialog attached)
             setDialogState(() {});
             void refreshSummary() {
@@ -4397,10 +4398,11 @@ class _InvoiceSimplePageState extends State<InvoiceSimplePage>
 
               if (selectedItem != null) {
                 refreshSummary();
+                addPendingEntry();
               }
             }
 
-            void addPendingEntry([Map<String, dynamic>? tappedItem]) {
+            addPendingEntry = ([Map<String, dynamic>? tappedItem]) {
               if (tappedItem != null) {
                 selectedItem = tappedItem;
               }
@@ -4478,7 +4480,7 @@ class _InvoiceSimplePageState extends State<InvoiceSimplePage>
                 discountSummary = validation.summary;
               });
               resetForm();
-            }
+            };
 
             final visibleItems = hasQuery ? filteredItems : _products;
             final screenSize = MediaQuery.sizeOf(dialogContext);

@@ -194,8 +194,13 @@ class _SuperAdminUseRightsPageState extends State<SuperAdminUseRightsPage> {
   bool _selectedIsAdmin = false;
   Map<String, bool> _rights = _defaultRights();
 
-  List<_UseRightFeature> get _visibleFeatures =>
-      _selectedIsAdmin ? _adminFeatures : _salesmanFeatures;
+  List<_UseRightFeature> get _visibleFeatures {
+    final auth = context.read<AuthProvider>();
+    if (auth.isSuper && _selectedIsAdmin) {
+      return _allFeatures;
+    }
+    return _salesmanFeatures;
+  }
 
   @override
   void dispose() {
@@ -241,11 +246,22 @@ class _SuperAdminUseRightsPageState extends State<SuperAdminUseRightsPage> {
     try {
       final results = await ApiService.searchSalesmen(query);
       if (!mounted) return;
+
+      final auth = context.read<AuthProvider>();
+      final filteredResults = auth.isSuper
+          ? results
+          : results.where((s) {
+              final isAdmin = s['isAdmin'] == true ||
+                  s['isAdmin'] == 1 ||
+                  (s['SalesmanType']?.toString().toLowerCase() == 'admin');
+              return !isAdmin;
+            }).toList();
+
       setState(() {
-        _searchResults = results;
+        _searchResults = filteredResults;
         _hasSearched = true;
       });
-      if (results.isEmpty && showEmptyMessage) {
+      if (filteredResults.isEmpty && showEmptyMessage) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('No salesmen found')));
