@@ -246,10 +246,6 @@ class ReceiptPdfGenerator {
               // 8. Terms & Conditions
               pw.Text('Terms & Conditions', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
               pw.Text('All Cheques to be drawn in favor of "${CompanyInfo.name.toUpperCase()} (PVT) LTD"', style: const pw.TextStyle(fontSize: 9)),
-              pw.Text('Acc Name: ${CompanyInfo.name} Private Limited', style: const pw.TextStyle(fontSize: 9)),
-              pw.Text('AccNo: 1000687772', style: const pw.TextStyle(fontSize: 9)),
-              pw.Text('Bank: Commercial Bank-Kottawa', style: const pw.TextStyle(fontSize: 9)),
-              
               pw.SizedBox(height: 5),
               pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
               pw.SizedBox(height: 10),
