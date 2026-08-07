@@ -23,6 +23,7 @@ class _BluetoothPrinterDialogState extends State<BluetoothPrinterDialog> {
   Future<void> _loadPrinters() async {
     setState(() => _isLoading = true);
     try {
+      await BluetoothPrinterService.ensurePermissions();
       final printers = await BluetoothPrinterService.getPairedPrinters();
       if (mounted) {
         setState(() {
