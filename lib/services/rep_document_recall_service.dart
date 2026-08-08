@@ -96,7 +96,12 @@ class RepDocumentRecallService {
           : fallbackCustomerName,
       'address': header['CustomerAddress']?.toString() ??
           header['Address']?.toString() ??
+          entry['addressLine1']?.toString() ??
           '',
+      'addressLine1': entry['addressLine1']?.toString() ?? '',
+      'addressLine2': entry['addressLine2']?.toString() ?? '',
+      'city': entry['city']?.toString() ?? '',
+      'mobile': entry['mobile']?.toString() ?? '',
       'code': header['CustomerCode']?.toString() ?? customerCode ?? '',
       'creditPeriod': header['CreditPeriod']?.toString() ??
           header['creditPeriod']?.toString() ??
@@ -246,7 +251,12 @@ class RepDocumentRecallService {
           : fallbackCustomerName,
       'address': header['CustomerAddress']?.toString() ??
           header['Address']?.toString() ??
+          entry['addressLine1']?.toString() ??
           '',
+      'addressLine1': entry['addressLine1']?.toString() ?? '',
+      'addressLine2': entry['addressLine2']?.toString() ?? '',
+      'city': entry['city']?.toString() ?? '',
+      'mobile': entry['mobile']?.toString() ?? '',
       'code': header['CustomerCode']?.toString() ?? customerCode ?? '',
       'creditPeriod': header['CreditPeriod']?.toString() ??
           header['creditPeriod']?.toString() ??
@@ -347,6 +357,7 @@ class RepDocumentRecallService {
       'discount': _toDouble(detail['DiscPer']) > 0
           ? '${_toDouble(detail['DiscPer']).toStringAsFixed(2)}%'
           : _toDouble(detail['DiscAmount']).toString(),
+      'amount': _toDouble(detail['Amount']),
       'stockLoca': detail['StockLoca']?.toString().isNotEmpty == true
           ? detail['StockLoca'].toString()
           : locaCode,

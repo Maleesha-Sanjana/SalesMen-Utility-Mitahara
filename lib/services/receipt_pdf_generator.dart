@@ -74,19 +74,19 @@ class ReceiptPdfGenerator {
                     pw.Text(
                       CompanyInfo.name,
                       style: pw.TextStyle(
-                        fontSize: 12,
+                        fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
                     if (CompanyInfo.addressLine1.isNotEmpty)
-                      pw.Text(CompanyInfo.addressLine1, style: const pw.TextStyle(fontSize: 10)),
+                      pw.Text(CompanyInfo.addressLine1, style: const pw.TextStyle(fontSize: 8)),
                     if (CompanyInfo.addressLine2.isNotEmpty)
-                      pw.Text(CompanyInfo.addressLine2, style: const pw.TextStyle(fontSize: 10)),
+                      pw.Text(CompanyInfo.addressLine2, style: const pw.TextStyle(fontSize: 8)),
                     if (CompanyInfo.registrationNumber.isNotEmpty)
-                      pw.Text(CompanyInfo.registrationNumber, style: const pw.TextStyle(fontSize: 10)),
-                    pw.Text('Ph.No.: ${CompanyInfo.phone}', style: const pw.TextStyle(fontSize: 10)),
+                      pw.Text(CompanyInfo.registrationNumber, style: const pw.TextStyle(fontSize: 8)),
+                    pw.Text('Ph.No.: ${CompanyInfo.phone}', style: const pw.TextStyle(fontSize: 8)),
                     if (CompanyInfo.email.isNotEmpty)
-                      pw.Text('Email: ${CompanyInfo.email}', style: const pw.TextStyle(fontSize: 10)),
+                      pw.Text('Email: ${CompanyInfo.email}', style: const pw.TextStyle(fontSize: 8)),
                   ],
                 ),
               ),
@@ -99,7 +99,7 @@ class ReceiptPdfGenerator {
                 child: pw.Text(
                   docType.toUpperCase(),
                   style: pw.TextStyle(
-                    fontSize: 12,
+                    fontSize: 10,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
@@ -116,15 +116,15 @@ class ReceiptPdfGenerator {
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         if (customerName.isNotEmpty)
-                          pw.Text(customerName, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                          pw.Text(customerName, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                         if (customerPhone.isNotEmpty)
-                          pw.Text('Ph.No.: $customerPhone', style: const pw.TextStyle(fontSize: 10)),
+                          pw.Text('Ph.No.: $customerPhone', style: const pw.TextStyle(fontSize: 8)),
                         pw.SizedBox(height: 2),
-                        pw.Text('Bill To:', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                        pw.Text('Bill To:', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                         if (customerName.isNotEmpty)
-                          pw.Text(customerName, style: const pw.TextStyle(fontSize: 10)),
+                          pw.Text(customerName, style: const pw.TextStyle(fontSize: 8)),
                         if (customerAddress.isNotEmpty)
-                          pw.Text(customerAddress, style: const pw.TextStyle(fontSize: 10)),
+                          pw.Text(customerAddress, style: const pw.TextStyle(fontSize: 8)),
                       ],
                     ),
                   ),
@@ -133,9 +133,9 @@ class ReceiptPdfGenerator {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
-                        pw.Text('Date: ${_date.format(documentDate)}', style: const pw.TextStyle(fontSize: 10)),
-                        pw.Text('Time: ${timeFormat.format(documentDate)}', style: const pw.TextStyle(fontSize: 10)),
-                        pw.Text('Invoice No: $documentNo', style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text('Date: ${_date.format(documentDate)}', style: const pw.TextStyle(fontSize: 8)),
+                        pw.Text('Time: ${timeFormat.format(documentDate)}', style: const pw.TextStyle(fontSize: 8)),
+                        pw.Text('Invoice No: $documentNo', style: const pw.TextStyle(fontSize: 8)),
                       ],
                     ),
                   ),
@@ -147,11 +147,11 @@ class ReceiptPdfGenerator {
               // 5. Items Header
               pw.Row(
                 children: [
-                  pw.SizedBox(width: 15, child: pw.Text('#', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 4, child: pw.Text('Name', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 2, child: pw.Text('Qty', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 2, child: pw.Text('Price', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 3, child: pw.Text('Amount', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                  pw.SizedBox(width: 15, child: pw.Text('#', style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 4, child: pw.Text('Name', style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 2, child: pw.Text('Qty', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 2, child: pw.Text('Price', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 3, child: pw.Text('Amount', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold))),
                 ],
               ),
               pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
@@ -178,7 +178,10 @@ class ReceiptPdfGenerator {
                     lineDiscVal = numDisc;
                   }
                 }
-                final finalAmount = lineTotal - lineDiscVal;
+                
+                final finalAmount = row['amount'] != null 
+                    ? double.tryParse(row['amount'].toString()) ?? (lineTotal - lineDiscVal)
+                    : (lineTotal - lineDiscVal);
 
                 return pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -186,25 +189,25 @@ class ReceiptPdfGenerator {
                     pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.SizedBox(width: 15, child: pw.Text('$index', style: const pw.TextStyle(fontSize: 8))),
+                        pw.SizedBox(width: 15, child: pw.Text('$index', style: const pw.TextStyle(fontSize: 6))),
                         pw.Expanded(
                           flex: 4, 
                           child: pw.Text(
                             itemName, 
-                            style: const pw.TextStyle(fontSize: 8),
+                            style: const pw.TextStyle(fontSize: 6),
                             maxLines: 1,
                             overflow: pw.TextOverflow.clip,
                           ),
                         ),
-                        pw.Expanded(flex: 2, child: pw.Text(qty.toStringAsFixed(0), textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 8))),
-                        pw.Expanded(flex: 2, child: pw.Text(price > 0 ? _money.format(price) : '', textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 8))),
-                        pw.Expanded(flex: 3, child: pw.Text(_money.format(finalAmount), textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 8))),
+                        pw.Expanded(flex: 2, child: pw.Text(qty.toStringAsFixed(0), textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 6))),
+                        pw.Expanded(flex: 2, child: pw.Text(price > 0 ? _money.format(price) : '', textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 6))),
+                        pw.Expanded(flex: 3, child: pw.Text(_money.format(finalAmount), textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 6))),
                       ],
                     ),
                     if (lineDiscVal > 0)
                       pw.Container(
                         alignment: pw.Alignment.centerRight,
-                        child: pw.Text('Disc: -${_money.format(lineDiscVal)}', style: const pw.TextStyle(fontSize: 8)),
+                        child: pw.Text('Disc: -${_money.format(lineDiscVal)}', style: const pw.TextStyle(fontSize: 6)),
                       ),
                     pw.SizedBox(height: 2),
                   ],
@@ -216,9 +219,9 @@ class ReceiptPdfGenerator {
               // 7. Totals
               pw.Row(
                 children: [
-                  pw.Expanded(flex: 4, child: pw.Text('Total', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 2, child: pw.Text('${rows.fold<double>(0, (sum, row) => sum + (double.tryParse(row['qty']?.toString() ?? '0') ?? 0)).toStringAsFixed(0)}', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))),
-                  pw.Expanded(flex: 5, child: pw.Text(_money.format(netAmount), textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 4, child: pw.Text('Total', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 2, child: pw.Text('${rows.fold<double>(0, (sum, row) => sum + (double.tryParse(row['qty']?.toString() ?? '0') ?? 0)).toStringAsFixed(0)}', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                  pw.Expanded(flex: 5, child: pw.Text(_money.format(netAmount), textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
                 ],
               ),
               pw.SizedBox(height: 5),
@@ -244,24 +247,27 @@ class ReceiptPdfGenerator {
               pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
 
               // 8. Terms & Conditions
-              pw.Text('Terms & Conditions', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-              pw.Text('All Cheques to be drawn in favor of "${CompanyInfo.name.toUpperCase()} (PVT) LTD"', style: const pw.TextStyle(fontSize: 9)),
+              pw.Text('Terms & Conditions', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+              pw.Text('All Cheques to be Drawn in Favor Of "MITAHARA PRIVATE LIMITED"', style: const pw.TextStyle(fontSize: 7)),
               pw.SizedBox(height: 5),
               pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
               pw.SizedBox(height: 10),
 
               // 9. Footer Sign & Seal
               pw.SizedBox(height: 80), // Space for seal and sign ABOVE the label
-              pw.Text("Receiver's Seal & Sign", style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+              pw.Align(
+                alignment: pw.Alignment.centerRight,
+                child: pw.Text("Receiver's Seal & Sign", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+              ),
               pw.SizedBox(height: 15),
-              pw.Text('Thanks for doing business with us !', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+              pw.Text('Thanks for doing business with us !', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 10),
               pw.Center(
                 child: pw.Column(
                   children: [
-                    pw.Text('System By Jazz Business Solution (pvt)Ltd', style: pw.TextStyle(fontSize: 8)),
+                    pw.Text('System By Jazz Business Solution (pvt)Ltd', style: pw.TextStyle(fontSize: 6)),
                     pw.SizedBox(height: 2),
-                    pw.Text('(c) www.jazz.lk TEL.0112886832/0777785523', style: pw.TextStyle(fontSize: 8)),
+                    pw.Text('(c) www.jazz.lk TEL.0112886832/0777785523', style: pw.TextStyle(fontSize: 6)),
                   ]
                 )
               ),
@@ -279,9 +285,9 @@ class ReceiptPdfGenerator {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
-        pw.Expanded(child: pw.Text(label, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))),
-        pw.Text(':', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-        pw.Expanded(child: pw.Text(_money.format(amount), textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))),
+        pw.Expanded(child: pw.Text(label, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+        pw.Text(':', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+        pw.Expanded(child: pw.Text(_money.format(amount), textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
       ],
     );
   }
