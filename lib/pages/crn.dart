@@ -4463,7 +4463,7 @@ class _CrnPageState extends State<CrnPage> with WidgetsBindingObserver {
                   'qty': validation.quantity,
                   'freeQty': validation.freeQuantity ?? 0,
                   'discount': validation.discountLabel,
-                  'price': validation.finalPrice,
+                  'price': _getPriceForItem(selectedItem!),
                   'unitPrice': selectedItem?['unitPrice'] ?? 0.0,
                   'wholeSalePrice': selectedItem?['wholeSalePrice'] ?? 0.0,
                   'costPrice': selectedItem?['costPrice'] ?? 0.0,
@@ -4507,7 +4507,7 @@ class _CrnPageState extends State<CrnPage> with WidgetsBindingObserver {
                     existing['freeQty'] = validation.freeQuantity ?? 0;
                   }
                   existing['discount'] = validation.discountLabel;
-                  existing['price'] = validation.finalPrice;
+                  existing['price'] = _getPriceForItem(selectedItem!);
                 } else {
                   pendingEntries.add(newEntry);
                 }

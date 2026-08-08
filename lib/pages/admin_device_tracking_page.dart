@@ -48,7 +48,7 @@ class _AdminDeviceTrackingPageState extends State<AdminDeviceTrackingPage> {
       if (!mounted) return;
       setState(() {
         _devices = summary.devices;
-        _maxAllowed = summary.maxAllowed;
+        _maxAllowed = 3; // Forcefully capped at 3 for Salesman Utility Mitahara
         _allowedCount = summary.allowedCount;
         _pendingCount = summary.pendingCount;
         _isLoading = false;
